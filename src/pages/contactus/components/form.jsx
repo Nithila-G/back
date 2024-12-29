@@ -10,33 +10,48 @@ export default function Form() {
     message: '',
   });
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-  };
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, mobile, message } = formData;
-
+  
     if (!name || !email || !mobile || !message) {
       toast.error('Please fill in all fields before submitting the form!', {
         position: 'top-center',
       });
       return;
     }
-
+  
     if (!/^[6-9]\d{9}$/.test(mobile)) {
       toast.error('Please enter a valid 10-digit mobile number!', {
         position: 'top-center',
       });
       return;
     }
-
-    toast.success(`Thank you, ${name}! 😊 Our team will contact you soon.`, {
-      position: 'top-center',
-    });
-
+  
+    try {
+      const response = await fetch('http://localhost:5000/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+  
+      if (response.ok) {
+        toast.success(`Thank you, ${name}! 😊 Our team will contact you soon.`, {
+          position: 'top-center',
+        });
+      } else {
+        toast.error('Failed to submit the form. Please try again later.', {
+          position: 'top-center',
+        });
+      }
+    } catch (err) {
+      toast.error('Error connecting to server. Please try again later.', {
+        position: 'top-center',
+      });
+    }
+  
     setFormData({
       name: '',
       email: '',
@@ -44,6 +59,7 @@ export default function Form() {
       message: '',
     });
   };
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-50">
